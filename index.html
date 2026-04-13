@@ -808,6 +808,26 @@
     <p class="hero-desc">Análise de Homem-Hora baseada em delta de código Git, com carga cognitiva e complexidade de domínio cronológico.</p>
   </div>
 
+  <!-- API KEY PANEL -->
+  <div class="panel" style="margin-bottom:20px">
+    <div class="panel-header">
+      <div class="panel-header-label">🔑 Chave de API Anthropic</div>
+      <div class="panel-header-num">00 / AUTH</div>
+    </div>
+    <div class="panel-body" style="padding:16px 24px">
+      <div class="form-group">
+        <label>Anthropic API Key</label>
+        <div class="input-eye-wrap">
+          <input type="password" id="api-key" placeholder="sk-ant-api03-..." autocomplete="off" />
+          <button class="eye-btn" onclick="toggleVis('api-key', this)" tabindex="-1">👁</button>
+        </div>
+      </div>
+      <div class="cred-hint" style="margin-top:8px">
+        Obtenha sua chave em <strong style="color:var(--accent)">console.anthropic.com</strong> → API Keys. Usada apenas localmente nesta sessão.
+      </div>
+    </div>
+  </div>
+
   <!-- INPUT PANEL -->
   <div class="panel">
     <div class="panel-header">
@@ -1093,6 +1113,12 @@ async function analyze() {
   const context = document.getElementById('context').value;
   const telemetria = document.getElementById('telemetria').checked;
 
+  const apiKey = document.getElementById('api-key').value.trim();
+  if (!apiKey || !apiKey.startsWith('sk-ant-')) {
+    alert('Informe uma Anthropic API Key válida no campo acima (começa com sk-ant-).');
+    return;
+  }
+
   if (currentMode === 'url' && (!repoUrl || !branchFeature)) {
     alert('Informe a URL do repositório e a branch de feature.');
     return;
@@ -1198,13 +1224,23 @@ Responda SOMENTE em JSON válido (sem markdown, sem texto fora do JSON), no form
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": document.getElementById('api-key').value.trim(),
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: 1000,
         messages: [{ role: "user", content: prompt }]
       })
     });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `HTTP ${response.status}`);
+    }
 
     const data = await response.json();
     const raw = data.content.map(i => i.text || '').join('');
