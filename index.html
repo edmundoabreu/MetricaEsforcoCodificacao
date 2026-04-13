@@ -645,6 +645,129 @@
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
+  /* CREDENTIALS */
+  .cred-section {
+    margin-top: 16px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .cred-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    cursor: pointer;
+    background: rgba(0,229,255,0.03);
+    transition: background 0.2s;
+    user-select: none;
+  }
+
+  .cred-header:hover { background: rgba(0,229,255,0.06); }
+
+  .cred-header-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+  }
+
+  .cred-toggle-icon {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .cred-body {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    display: none;
+  }
+
+  .cred-body.open { display: block; }
+
+  .cred-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    padding: 8px 10px;
+    background: rgba(255,214,0,0.04);
+    border: 1px solid rgba(255,214,0,0.12);
+    border-radius: 2px;
+    margin-bottom: 14px;
+  }
+
+  .cred-type-tabs {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  .cred-tab {
+    flex: 1;
+    padding: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-align: center;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .cred-tab.active {
+    background: rgba(0,229,255,0.08);
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+  }
+
+  .cred-hint {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 8px;
+    line-height: 1.6;
+  }
+
+  .input-eye-wrap {
+    position: relative;
+    display: flex;
+  }
+
+  .input-eye-wrap input {
+    flex: 1;
+    padding-right: 38px;
+  }
+
+  .eye-btn {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 36px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+  }
+
+  .eye-btn:hover { color: var(--accent); }
+
   /* RESPONSIVE */
   @media (max-width: 640px) {
     .form-grid { grid-template-columns: 1fr; }
@@ -711,6 +834,75 @@
           <div class="form-group">
             <label>Branch Base</label>
             <input type="text" id="branch-base" placeholder="main" value="main" />
+          </div>
+        </div>
+
+        <!-- CREDENCIAIS -->
+        <div class="cred-section">
+          <div class="cred-header" onclick="toggleCred()">
+            <span class="cred-header-label">🔐 Credenciais de Acesso ao Repositório</span>
+            <span class="cred-toggle-icon" id="cred-icon">▸ expandir</span>
+          </div>
+          <div class="cred-body" id="cred-body">
+            <div class="cred-note">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Credenciais usadas apenas localmente nesta sessão — não são armazenadas nem enviadas a terceiros.
+            </div>
+
+            <div class="cred-type-tabs">
+              <button class="cred-tab active" onclick="setCredType('token')" id="ctab-token">Token / PAT</button>
+              <button class="cred-tab" onclick="setCredType('userpass')" id="ctab-userpass">Usuário + Senha</button>
+              <button class="cred-tab" onclick="setCredType('ssh')" id="ctab-ssh">Chave SSH</button>
+            </div>
+
+            <!-- TOKEN -->
+            <div id="cred-token">
+              <div class="form-grid" style="margin-top:12px">
+                <div class="form-group full">
+                  <label>Personal Access Token (PAT)</label>
+                  <div class="input-eye-wrap">
+                    <input type="password" id="git-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+                    <button class="eye-btn" onclick="toggleVis('git-token', this)" tabindex="-1">👁</button>
+                  </div>
+                </div>
+              </div>
+              <div class="cred-hint">GitHub: Settings → Developer settings → Personal access tokens &nbsp;·&nbsp; GitLab: Preferences → Access Tokens</div>
+            </div>
+
+            <!-- USUÁRIO + SENHA -->
+            <div id="cred-userpass" style="display:none">
+              <div class="form-grid" style="margin-top:12px">
+                <div class="form-group">
+                  <label>Usuário</label>
+                  <input type="text" id="git-user" placeholder="seu-usuario" autocomplete="off" />
+                </div>
+                <div class="form-group">
+                  <label>Senha / App Password</label>
+                  <div class="input-eye-wrap">
+                    <input type="password" id="git-pass" placeholder="••••••••••••" autocomplete="off" />
+                    <button class="eye-btn" onclick="toggleVis('git-pass', this)" tabindex="-1">👁</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SSH -->
+            <div id="cred-ssh" style="display:none">
+              <div class="form-grid" style="margin-top:12px">
+                <div class="form-group full">
+                  <label>Chave Privada SSH (PEM / OpenSSH)</label>
+                  <textarea id="git-ssh-key" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----" style="min-height:90px;font-size:11px;"></textarea>
+                </div>
+                <div class="form-group full">
+                  <label>Passphrase da chave (se houver)</label>
+                  <div class="input-eye-wrap">
+                    <input type="password" id="git-ssh-pass" placeholder="opcional" autocomplete="off" />
+                    <button class="eye-btn" onclick="toggleVis('git-ssh-pass', this)" tabindex="-1">👁</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -855,6 +1047,43 @@ function setMode(mode) {
   document.getElementById('tab-diff').classList.toggle('active', mode === 'diff');
 }
 
+function toggleCred() {
+  const body = document.getElementById('cred-body');
+  const icon = document.getElementById('cred-icon');
+  const open = body.classList.toggle('open');
+  icon.textContent = open ? '▾ recolher' : '▸ expandir';
+}
+
+let currentCredType = 'token';
+
+function setCredType(type) {
+  currentCredType = type;
+  ['token','userpass','ssh'].forEach(t => {
+    document.getElementById('cred-' + t).style.display = t === type ? 'block' : 'none';
+    document.getElementById('ctab-' + t).classList.toggle('active', t === type);
+  });
+}
+
+function toggleVis(id, btn) {
+  const el = document.getElementById(id);
+  const isPass = el.type === 'password';
+  el.type = isPass ? 'text' : 'password';
+  btn.style.opacity = isPass ? '1' : '0.5';
+}
+
+function getCredInfo() {
+  if (currentCredType === 'token') {
+    const tok = document.getElementById('git-token').value;
+    return tok ? `Autenticação: Token/PAT (${tok.length} caracteres)` : 'Autenticação: nenhuma credencial informada';
+  } else if (currentCredType === 'userpass') {
+    const u = document.getElementById('git-user').value;
+    return u ? `Autenticação: Usuário/Senha (usuário: ${u})` : 'Autenticação: nenhuma credencial informada';
+  } else {
+    const key = document.getElementById('git-ssh-key').value;
+    return key ? 'Autenticação: Chave SSH fornecida' : 'Autenticação: nenhuma credencial informada';
+  }
+}
+
 async function analyze() {
   const repoUrl = document.getElementById('repo-url').value;
   const branchFeature = document.getElementById('branch-feature').value;
@@ -906,7 +1135,7 @@ async function analyze() {
   const seniorityLabel = seniorityMap[seniority];
 
   const inputInfo = currentMode === 'url'
-    ? `Repositório: ${repoUrl || 'não informado'}\nBranch feature: ${branchFeature || 'não informada'}\nBranch base: ${branchBase || 'main'}`
+    ? `Repositório: ${repoUrl || 'não informado'}\nBranch feature: ${branchFeature || 'não informada'}\nBranch base: ${branchBase || 'main'}\n${getCredInfo()}`
     : `Diff/Código fornecido diretamente:\n${codeDiff}`;
 
   const prompt = `Você é um Engenheiro de Métricas e Custos de Software especializado em sistemas de missão crítica do Setor Elétrico/Transmissão.
